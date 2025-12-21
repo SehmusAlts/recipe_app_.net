@@ -1,0 +1,24 @@
+= : The term '=' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the 
+spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:47
++ Add-Type -AssemblyName System.Windows.Forms;  = New-Object System.Win ...
++                                               ~
+    + CategoryInfo          : ObjectNotFound: (=:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+.Rtf : The term '.Rtf' is not recognized as the name of a cmdlet, function, script file, or operable program. Check 
+the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:94
++ ... s.Forms;  = New-Object System.Windows.Forms.RichTextBox; .Rtf = [Syst ...
++                                                              ~~~~
+    + CategoryInfo          : ObjectNotFound: (.Rtf:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+.Text : The term '.Text' is not recognized as the name of a cmdlet, function, script file, or operable program. Check 
+the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:185
++ ... adAllText('C:\Users\Seyman\Desktop\sehmusProje\web rapor.rtf'); .Text
++                                                                     ~~~~~
+    + CategoryInfo          : ObjectNotFound: (.Text:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
