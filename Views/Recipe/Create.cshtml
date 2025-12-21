@@ -1,0 +1,171 @@
+@model RecipeApp.Web.Models.ViewModels.CreateRecipeViewModel
+@{
+    ViewData["Title"] = "Yeni Tarif Ekle";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-plus-circle"></i> Yeni Tarif Ekle
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Name -->
+                        <div class="mb-4">
+                            <label asp-for="Name" class="form-label">
+                                <i class="bi bi-card-heading"></i> Tarif Adı *
+                            </label>
+                            <input asp-for="Name" class="form-control" placeholder="Örn: Sütlaç, Mercimek Çorbası" required>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="mb-4">
+                            <label asp-for="Category" class="form-label">
+                                <i class="bi bi-tag"></i> Kategori *
+                            </label>
+                            <select asp-for="Category" class="form-select" required>
+                                <option value="">Kategori Seçiniz</option>
+                                @foreach (RecipeApp.Web.Models.RecipeCategory category in ViewBag.Categories)
+                                {
+                                    <option value="@((int)category)">@category</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Category" class="text-danger"></span>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label">
+                                <i class="bi bi-textarea-t"></i> Açıklama
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="3"
+                                      placeholder="Tarif hakkında kısa bir açıklama yazın..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <!-- Time & Servings Row -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label asp-for="PreparationTimeMinutes" class="form-label">
+                                    <i class="bi bi-clock"></i> Hazırlık (dk) *
+                                </label>
+                                <input asp-for="PreparationTimeMinutes" type="number" class="form-control" min="0" placeholder="30" required>
+                                <span asp-validation-for="PreparationTimeMinutes" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="CookingTimeMinutes" class="form-label">
+                                    <i class="bi bi-fire"></i> Pişirme (dk) *
+                                </label>
+                                <input asp-for="CookingTimeMinutes" type="number" class="form-control" min="0" placeholder="45" required>
+                                <span asp-validation-for="CookingTimeMinutes" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Servings" class="form-label">
+                                    <i class="bi bi-people"></i> Porsiyon *
+                                </label>
+                                <input asp-for="Servings" type="number" class="form-control" min="1" placeholder="4" required>
+                                <span asp-validation-for="Servings" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Ingredients -->
+                        <div class="mb-4">
+                            <label asp-for="IngredientsText" class="form-label">
+                                <i class="bi bi-basket2"></i> Malzemeler *
+                            </label>
+                            <textarea asp-for="IngredientsText" class="form-control" rows="8"
+                                      placeholder="Her satıra bir malzeme yazın...&#10;Örnek:&#10;2 su bardağı süt&#10;1 su bardağı pirinç&#10;4 yemek kaşığı şeker&#10;1 paket vanilya" required></textarea>
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> Her satıra bir malzeme yazın
+                            </small>
+                            <span asp-validation-for="IngredientsText" class="text-danger"></span>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div class="mb-4">
+                            <label asp-for="Instructions" class="form-label">
+                                <i class="bi bi-list-ol"></i> Hazırlanışı *
+                            </label>
+                            <textarea asp-for="Instructions" class="form-control" rows="10"
+                                      placeholder="Tarif yapılışını adım adım yazın...&#10;&#10;Örnek:&#10;1. Pirinci iyice yıkayın ve süzün.&#10;2. Tencereye sütü ve pirinci ekleyip kaynatın.&#10;3. Kısık ateşte pirinçler yumuşayana kadar pişirin.&#10;..." required></textarea>
+                            <span asp-validation-for="Instructions" class="text-danger"></span>
+                        </div>
+
+                        <!-- Image URL -->
+                        <div class="mb-4">
+                            <label asp-for="ImageUrl" class="form-label">
+                                <i class="bi bi-image"></i> Görsel URL (İsteğe Bağlı)
+                            </label>
+                            <input asp-for="ImageUrl" type="url" class="form-control"
+                                   placeholder="https://example.com/image.jpg">
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> Tarifin görselinin internet adresi
+                            </small>
+                            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> İptal
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Tarifi Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Card -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb"></i> İpuçları
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>Tarif adını kısa ve açıklayıcı tutun</li>
+                        <li>Malzemeleri miktarlarıyla birlikte yazın</li>
+                        <li>Yapılış adımlarını numaralandırarak yazın</li>
+                        <li>Ölçümleri standart kullanın (su bardağı, yemek kaşığı, gram)</li>
+                        <li>Özel ipuçlarınızı da eklemeyi unutmayın</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        // Preview image URL
+        document.querySelector('input[name="ImageUrl"]')?.addEventListener('blur', function() {
+            const url = this.value;
+            if (url) {
+                // Simple URL validation
+                try {
+                    new URL(url);
+                    showToast('Görsel URL doğrulandı', 'success');
+                } catch {
+                    showToast('Geçersiz URL formatı', 'warning');
+                }
+            }
+        });
+
+        // Form submission
+        document.querySelector('form').addEventListener('submit', function() {
+            showLoading();
+        });
+    </script>
+}

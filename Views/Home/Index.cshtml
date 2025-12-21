@@ -1,0 +1,146 @@
+﻿@inject RecipeApp.Web.Services.IRecipeService RecipeService
+@{
+    ViewData["Title"] = "Ana Sayfa";
+    var featuredRecipes = await RecipeService.GetRecipesAsync(1, 6);
+}
+
+<!-- Hero Section -->
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="hero-title">
+            <i class="bi bi-egg-fried me-3"></i>
+            Tarif Defterime Hoş Geldiniz
+        </h1>
+        <p class="hero-subtitle mb-4">
+            Binlerce lezzetli tarif keşfedin, favori tariflerinizi kaydedin ve kendi tariflerinizi paylaşın!
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a asp-controller="Recipe" asp-action="Index" class="btn btn-light btn-lg">
+                <i class="bi bi-book"></i> Tariflere Göz At
+            </a>
+            <a asp-controller="Auth" asp-action="Register" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-person-plus"></i> Hemen Başla
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container mb-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <i class="bi bi-search text-primary" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4>Keşfet</h4>
+                    <p class="text-muted">
+                        Binlerce tarif arasından istediğiniz kategoriyi seçin ve arama yapın.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <i class="bi bi-heart-fill text-danger" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4>Favorile</h4>
+                    <p class="text-muted">
+                        Sevdiğiniz tarifleri favorilerinize ekleyin ve kolayca erişin.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <i class="bi bi-plus-circle text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4>Paylaş</h4>
+                    <p class="text-muted">
+                        Kendi tariflerinizi ekleyin ve diğer kullanıcılarla paylaşın.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Recipes -->
+@if (featuredRecipes != null && featuredRecipes.Items.Any())
+{
+    <div class="container mb-5">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold">Öne Çıkan Tarifler</h2>
+                <p class="text-muted">En popüler ve beğenilen tariflerimize göz atın</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var recipe in featuredRecipes.Items.Take(6))
+            {
+                <div class="col-md-4 col-lg-4">
+                    <div class="card recipe-card shadow-sm h-100">
+                        @if (!string.IsNullOrEmpty(recipe.ImageUrl))
+                        {
+                            <img src="@recipe.ImageUrl" class="card-img-top" alt="@recipe.Name" style="height: 200px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="bi bi-egg-fried text-muted" style="font-size: 4rem;"></i>
+                            </div>
+                        }
+                        <div class="card-body">
+                            <h5 class="recipe-card-title">@recipe.Name</h5>
+                            <p class="recipe-card-text">
+                                @if (!string.IsNullOrEmpty(recipe.Description))
+                                {
+                                    @(recipe.Description.Length > 100 ? recipe.Description.Substring(0, 100) + "..." : recipe.Description)
+                                }
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    @recipe.AverageRating.ToString("0.0")
+                                    <span class="text-muted">(@recipe.RatingsCount)</span>
+                                </small>
+                                <span class="badge bg-primary category-badge">@recipe.Category</span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a asp-controller="Recipe" asp-action="Details" asp-route-id="@recipe.Id"
+                                   class="btn btn-primary btn-sm flex-fill">
+                                    <i class="bi bi-eye"></i> Detaylar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="text-center mt-4">
+            <a asp-controller="Recipe" asp-action="Index" class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-arrow-right-circle"></i> Tüm Tarifleri Gör
+            </a>
+        </div>
+    </div>
+}
+
+<!-- Call to Action -->
+<div class="bg-light py-5">
+    <div class="container text-center">
+        <h3 class="fw-bold mb-3">Hemen Başlamaya Hazır Mısınız?</h3>
+        <p class="text-muted mb-4">
+            Ücretsiz hesap oluşturun ve tarifleri keşfetmeye başlayın!
+        </p>
+        <a asp-controller="Auth" asp-action="Register" class="btn btn-primary btn-lg">
+            <i class="bi bi-person-plus"></i> Ücretsiz Kayıt Ol
+        </a>
+    </div>
+</div>

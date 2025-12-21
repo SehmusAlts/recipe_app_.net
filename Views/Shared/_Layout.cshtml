@@ -1,0 +1,175 @@
+@inject RecipeApp.Web.Services.IAuthService AuthService
+@{
+    var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+    var userName = Context.Session.GetString("user_name") ?? "Kullanıcı";
+    var userEmail = Context.Session.GetString("user_email") ?? "";
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Tarif Uygulaması</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/RecipeApp.Web.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <!-- Header with Brown Background -->
+    <header class="custom-header">
+        <div class="container-fluid px-4">
+            <div class="row align-items-center py-2">
+                <!-- Logo Section -->
+                <div class="col-md-2">
+                    <a class="logo-link" asp-controller="Home" asp-action="Index">
+                        <div class="logo-container">
+                            <i class="bi bi-egg-fried"></i>
+                            <div class="logo-text">
+                                <span class="logo-title">EN GÜZEL</span>
+                                <span class="logo-subtitle">tarifler</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="col-md-7">
+                    <div class="search-container">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" class="form-control search-input" placeholder="Tarif ara..." id="searchInput">
+                    </div>
+                </div>
+
+                <!-- User Profile -->
+                <div class="col-md-3 text-end">
+                    @if (isAuthenticated)
+                    {
+                        <div class="user-profile-container dropdown">
+                            <a href="#" class="user-profile dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i>
+                                <span class="username">@userName</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item disabled text-muted small">
+                                        <i class="bi bi-envelope"></i> @userEmail
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="btn btn-light" asp-controller="Auth" asp-action="Login">
+                            <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Menu -->
+    <nav class="custom-nav">
+        <div class="container-fluid px-4">
+            <div class="nav-buttons">
+                <a class="nav-btn" asp-controller="Recipe" asp-action="Index">
+                    TARİFLER
+                </a>
+                @if (isAuthenticated)
+                {
+                    <a class="nav-btn" asp-controller="Recipe" asp-action="Favorites">
+                        FAVORİLER
+                    </a>
+                    <a class="nav-btn" asp-controller="Recipe" asp-action="Create">
+                        TARİFLERİM
+                    </a>
+                }
+            </div>
+        </div>
+    </nav>
+
+    <!-- Alert Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Main Content -->
+    <main role="main" class="pb-4">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">
+                        <i class="bi bi-egg-fried"></i> Tarif Defterim
+                    </h5>
+                    <p class="text-muted small">
+                        En sevdiğiniz tarifleri keşfedin, paylaşın ve favorilerinize ekleyin.
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="mb-3">Hızlı Linkler</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light text-decoration-none small">Hakkımızda</a></li>
+                        <li><a href="#" class="text-light text-decoration-none small">İletişim</a></li>
+                        <li><a asp-controller="Home" asp-action="Privacy" class="text-light text-decoration-none small">Gizlilik</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="mb-3">Bizi Takip Edin</h6>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-light"><i class="bi bi-facebook fs-4"></i></a>
+                        <a href="#" class="text-light"><i class="bi bi-instagram fs-4"></i></a>
+                        <a href="#" class="text-light"><i class="bi bi-twitter fs-4"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-3 bg-secondary">
+            <div class="text-center text-muted small">
+                <p class="mb-0">
+                    &copy; 2025 Tarif Defterim.
+                    <span class="text-white-50">Ankara Üniversitesi - Bilgisayar Mühendisliği</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

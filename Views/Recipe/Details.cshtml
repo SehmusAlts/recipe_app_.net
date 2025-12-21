@@ -1,0 +1,330 @@
+@model RecipeApp.Web.Models.RecipeDto
+@inject RecipeApp.Web.Services.IAuthService AuthService
+@{
+    ViewData["Title"] = Model.Name;
+    var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Recipe Image -->
+        <div class="col-lg-5 mb-4">
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <img src="@Model.ImageUrl" alt="@Model.Name" class="recipe-detail-image">
+            }
+            else
+            {
+                <div class="recipe-detail-image bg-light d-flex align-items-center justify-content-center">
+                    <i class="bi bi-egg-fried text-muted" style="font-size: 8rem;"></i>
+                </div>
+            }
+
+            <!-- Favorite Button -->
+            @if (isAuthenticated)
+            {
+                <button class="btn btn-favorite w-100 mt-3 @(Model.IsFavorite ? "active" : "")"
+                        data-recipe-id="@Model.Id"
+                        onclick="toggleFavorite('@Model.Id')">
+                    <i class="bi bi-heart@(Model.IsFavorite ? "-fill" : "")"></i>
+                    @(Model.IsFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle")
+                </button>
+            }
+        </div>
+
+        <!-- Recipe Details -->
+        <div class="col-lg-7">
+            <h1 class="fw-bold mb-3">@Model.Name</h1>
+
+            <!-- Rating -->
+            <div class="mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rating-display">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <i class="bi bi-star@(i <= Math.Round(Model.AverageRating) ? "-fill" : "")"></i>
+                        }
+                    </div>
+                    <span class="fw-bold">@Model.AverageRating.ToString("0.0")</span>
+                    <span class="text-muted">(@Model.RatingsCount değerlendirme)</span>
+                </div>
+            </div>
+
+            <!-- Category Badge -->
+            <div class="mb-3">
+                <span class="badge bg-primary category-badge fs-6">@Model.Category</span>
+            </div>
+
+            <!-- Description -->
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <p class="lead text-muted mb-4">@Model.Description</p>
+            }
+
+            <!-- Meta Information -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="recipe-meta-item">
+                        <i class="bi bi-clock"></i>
+                        <div>
+                            <small class="text-muted d-block">Hazırlık</small>
+                            <strong>@Model.PreparationTimeMinutes dk</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="recipe-meta-item">
+                        <i class="bi bi-fire"></i>
+                        <div>
+                            <small class="text-muted d-block">Pişirme</small>
+                            <strong>@Model.CookingTimeMinutes dk</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="recipe-meta-item">
+                        <i class="bi bi-people"></i>
+                        <div>
+                            <small class="text-muted d-block">Porsiyon</small>
+                            <strong>@Model.Servings kişilik</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ingredients & Instructions -->
+    <div class="row mt-5">
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-basket2"></i> Malzemeler
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.Ingredients != null && Model.Ingredients.Any())
+                    {
+                        <ul class="ingredient-list">
+                            @foreach (var ingredient in Model.Ingredients)
+                            {
+                                <li>@ingredient</li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-list-ol"></i> Hazırlanışı
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.Instructions))
+                    {
+                        <div class="instructions-text">
+                            @Html.Raw(Model.Instructions.Replace("\n", "<br>"))
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0">
+                        <i class="bi bi-star-fill text-white"></i> Değerlendirmeler
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (isAuthenticated)
+                    {
+                        <!-- Add Rating Form -->
+                        <div class="mb-4 p-4 bg-light rounded">
+                            <h5 class="mb-3">Bu tarifi değerlendirin</h5>
+                            <form id="ratingForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Puan</label>
+                                    <div class="rating-stars" id="ratingStars">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="bi bi-star-fill rating-star" data-rating="@i"></i>
+                                        }
+                                    </div>
+                                    <input type="hidden" id="ratingValue" name="rating" value="0">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="comment" class="form-label">Yorum (İsteğe Bağlı)</label>
+                                    <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="Tarif hakkındaki düşüncelerinizi paylaşın..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="bi bi-star"></i> Değerlendirmeyi Gönder
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            Tarifi değerlendirmek için <a asp-controller="Auth" asp-action="Login" asp-route-returnUrl="@Url.Action("Details", new { id = Model.Id })">giriş yapın</a>.
+                        </div>
+                    }
+
+                    <!-- Ratings List (Will be loaded via AJAX) -->
+                    <div id="ratingsList">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Yükleniyor...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-4 mb-5">
+        <a asp-action="Index" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Tariflere Dön
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const recipeId = '@Model.Id';
+
+        // Rating stars interaction
+        document.querySelectorAll('.rating-star').forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.dataset.rating;
+                document.getElementById('ratingValue').value = rating;
+
+                // Update visual feedback
+                document.querySelectorAll('.rating-star').forEach(s => {
+                    const starRating = s.dataset.rating;
+                    if (starRating <= rating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+
+            // Hover effect
+            star.addEventListener('mouseenter', function() {
+                const rating = this.dataset.rating;
+                document.querySelectorAll('.rating-star').forEach(s => {
+                    const starRating = s.dataset.rating;
+                    if (starRating <= rating) {
+                        s.style.color = '#ffc107';
+                    }
+                });
+            });
+        });
+
+        // Reset hover effect
+        document.getElementById('ratingStars').addEventListener('mouseleave', function() {
+            const currentRating = document.getElementById('ratingValue').value;
+            document.querySelectorAll('.rating-star').forEach(s => {
+                const starRating = s.dataset.rating;
+                if (starRating > currentRating) {
+                    s.style.color = '#e0e0e0';
+                }
+            });
+        });
+
+        // Submit rating
+        document.getElementById('ratingForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const rating = document.getElementById('ratingValue').value;
+            const comment = document.getElementById('comment').value;
+
+            if (rating == 0) {
+                showToast('Lütfen bir puan seçin', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/Rating', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        recipeId: recipeId,
+                        value: parseInt(rating),
+                        comment: comment || null
+                    })
+                });
+
+                if (response.ok) {
+                    showToast('Değerlendirmeniz kaydedildi!', 'success');
+                    document.getElementById('ratingForm').reset();
+                    document.querySelectorAll('.rating-star').forEach(s => s.classList.remove('active'));
+                    document.getElementById('ratingValue').value = 0;
+                    loadRatings();
+                    location.reload(); // Reload to update average rating
+                } else {
+                    showToast('Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
+                }
+            } catch (error) {
+                showToast('Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
+            }
+        });
+
+        // Load ratings
+        async function loadRatings() {
+            try {
+                const response = await fetch(`/Rating/recipe/${recipeId}`);
+                const ratings = await response.json();
+
+                const ratingsList = document.getElementById('ratingsList');
+
+                if (ratings.length === 0) {
+                    ratingsList.innerHTML = '<p class="text-muted text-center py-4">Henüz değerlendirme yapılmamış.</p>';
+                    return;
+                }
+
+                let html = '';
+                ratings.forEach(rating => {
+                    html += `
+                        <div class="comment-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <div class="comment-author">Kullanıcı</div>
+                                    <div class="rating-display">
+                                        ${[...Array(5)].map((_, i) =>
+                                            `<i class="bi bi-star${i < rating.value ? '-fill' : ''}"></i>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                                <small class="comment-date">${new Date(rating.ratedAt).toLocaleDateString('tr-TR')}</small>
+                            </div>
+                            ${rating.comment ? `<p class="mb-0">${rating.comment}</p>` : ''}
+                        </div>
+                    `;
+                });
+
+                ratingsList.innerHTML = html;
+            } catch (error) {
+                document.getElementById('ratingsList').innerHTML = '<p class="text-muted text-center py-4">Değerlendirmeler yüklenemedi.</p>';
+            }
+        }
+
+        // Load ratings on page load
+        document.addEventListener('DOMContentLoaded', loadRatings);
+    </script>
+}

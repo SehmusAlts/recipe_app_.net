@@ -1,61 +1,87 @@
 using Microsoft.AspNetCore.Mvc;
-using RecipeApp.Application.DTOs.Auth;
-using RecipeApp.Application.Interfaces;
-using RecipeApp.Domain.Exceptions;
+using RecipeApp.Web.Models.ViewModels;
+using RecipeApp.Web.Services;
 
-namespace RecipeApp.API.Controllers;
+namespace RecipeApp.Web.Controllers;
 
-/// <summary>
-/// Authentication controller.
-/// Handles user registration and login.
-/// </summary>
-[ApiController]
-[Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController : Controller
 {
     private readonly IAuthService _authService;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, ILogger<AuthController> logger)
     {
-        _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+        _authService = authService;
+        _logger = logger;
     }
 
-    /// <summary>
-    /// Register a new user
-    /// </summary>
-    [HttpPost("register")]
-    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterRequestDto request)
+    [HttpGet]
+    public IActionResult Login(string? returnUrl = null)
     {
-        try
-        {
-            var response = await _authService.RegisterAsync(request);
-            return CreatedAtAction(nameof(Register), response);
-        }
-        catch (ValidationException ex)
-        {
-            return BadRequest(new { message = ex.Message, errors = ex.Errors });
-        }
+        ViewData["ReturnUrl"] = returnUrl;
+        return View();
     }
 
-    /// <summary>
-    /// Login with email and password
-    /// </summary>
-    [HttpPost("login")]
-    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginRequestDto request)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Login(LoginViewModel model)
     {
-        try
+        if (!ModelState.IsValid)
         {
-            var response = await _authService.LoginAsync(request);
-            return Ok(response);
+            return View(model);
         }
-        catch (ValidationException ex)
+
+        var result = await _authService.LoginAsync(model.Email, model.Password);
+
+        if (result == null)
         {
-            return Unauthorized(new { message = ex.Message });
+            ModelState.AddModelError(string.Empty, "Email veya şifre hatalı");
+            return View(model);
         }
+
+        TempData["SuccessMessage"] = "Başarıyla giriş yaptınız!";
+
+        if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+        {
+            return Redirect(model.ReturnUrl);
+        }
+
+        return RedirectToAction("Index", "Recipe");
+    }
+
+    [HttpGet]
+    public IActionResult Register()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Register(RegisterViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var result = await _authService.RegisterAsync(model);
+
+        if (result == null)
+        {
+            ModelState.AddModelError(string.Empty, "Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+            return View(model);
+        }
+
+        TempData["SuccessMessage"] = "Kayıt başarılı! Hoş geldiniz!";
+        return RedirectToAction("Index", "Recipe");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Logout()
+    {
+        await _authService.LogoutAsync();
+        TempData["InfoMessage"] = "Başarıyla çıkış yaptınız.";
+        return RedirectToAction("Index", "Home");
     }
 }
